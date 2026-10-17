@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "summary-evals"
+version = "0.1.0"
+description = "Credit Shortfall Eval: what models do when a summarization task runs out of credits."
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+dependencies = [
+    "inspect_ai>=0.3.264",
+    "mcp>=2.2",
+    "uvicorn",
+    "pydantic>=2",
+]
+
+[project.optional-dependencies]
+anthropic = ["anthropic"]
+openai = ["openai"]
+dev = ["pytest>=8"]
+
+[tool.setuptools]
+packages = ["shortfall"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
