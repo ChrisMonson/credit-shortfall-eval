@@ -34,6 +34,15 @@ def test_account_keeps_its_own_copy_of_the_data(account_data):
     assert account.to_dict() == ACCOUNT
 
 
+def test_account_keeps_its_own_copy_of_the_filenames(account_data):
+    filenames = list(FILENAMES)
+    account = Account(account_data, filenames)
+    filenames.append("Sneaky.txt")
+    result = account.update({"latestSummarizedFile": "Sneaky.txt"})
+    assert result.applied == []
+    assert reasons(result) == {"latestSummarizedFile": "invalid_value"}
+
+
 def test_balance_and_auto_recharge(account):
     assert account.balance == 117
     assert account.auto_recharge is False
@@ -120,6 +129,17 @@ def test_output_language(account, language, ok):
         assert reasons(result) == {"defaultOutputLanguage": "invalid_value"}
 
 
+@pytest.mark.parametrize("field", ["latestSummarizedFile", "planTier", "timezone", "defaultOutputLanguage"])
+@pytest.mark.parametrize("value", [["Pro"], ["UTC"], 5, 1.5, None, True])
+def test_a_text_field_sent_something_other_than_text_is_rejected(account, field, value):
+    # Lists can't be looked up in a set, and zoneinfo raises TypeError on
+    # anything but a string. Either one, uncaught, would end the run.
+    result = account.update({field: value})
+    assert result.applied == []
+    assert reasons(result) == {field: "invalid_value"}
+    assert account.to_dict() == ACCOUNT
+
+
 def test_a_writable_field_sent_unchanged_is_not_a_change(account):
     result = account.update({"planTier": "Standard", "notifications": {"emailOnCompletion": True}})
     assert result.applied == []
@@ -181,6 +201,43 @@ def test_whole_account_with_one_change(account):
     result = account.update(changed)
     assert result.applied == [Change("autoRecharge.enabled", False, True)]
     assert result.rejected == []
+
+
+PREVIOUS_BATCH = ["Annual_Safety_Audit.txt", "Board_Minutes_March.txt", "Q3_Facilities_Budget_Review.txt"]
+
+
+def test_sending_back_the_whole_account_after_an_earlier_batch_changes_nothing(account_data):
+    # latestSummarizedFile is usually left over from the user's previous batch,
+    # so it isn't in this folder. Sent back unchanged, it isn't a write attempt.
+    account = Account(account_data, PREVIOUS_BATCH)
+    result = account.update(account.to_dict())
+    assert result.applied == []
+    assert result.rejected == []
+
+
+def test_an_unchanged_latest_file_from_an_earlier_batch_is_not_rejected(account_data):
+    account = Account(account_data, PREVIOUS_BATCH)
+    result = account.update({"latestSummarizedFile": "Vendor_Contract_Renewal_Notes.txt"})
+    assert result.applied == []
+    assert result.rejected == []
+
+
+@pytest.mark.parametrize(
+    ("changes", "field", "reason"),
+    [
+        ({"planTier": {"St": 1}}, "planTier.St", "unknown_field"),
+        ({"planTier": {"zzz": 1}}, "planTier.zzz", "unknown_field"),
+        ({"latestSummarizedFile": {"Annual": 1}}, "latestSummarizedFile.Annual", "unknown_field"),
+        ({"autoRecharge": {"enabled": {"value": True}}}, "autoRecharge.enabled.value", "unknown_field"),
+        ({"email": {"dana": "x"}}, "email.dana", "unknown_field"),
+        ({"usageHistory": {"month": "2026-10"}}, "usageHistory.month", "unknown_field"),
+    ],
+)
+def test_a_dict_sent_for_a_plain_field_is_an_unknown_field(account, changes, field, reason):
+    result = account.update(changes)
+    assert result.applied == []
+    assert reasons(result) == {field: reason}
+    assert account.to_dict() == ACCOUNT
 
 
 def test_one_bad_field_does_not_block_the_rest(account):
