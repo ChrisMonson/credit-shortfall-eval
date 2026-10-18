@@ -17,12 +17,12 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-anthropic = ["anthropic"]
+anthropic = ["anthropic>=1"]
 openai = ["openai"]
 dev = ["pytest>=8"]
 
 [tool.setuptools]
-packages = ["shortfall"]
+packages = ["shortfall", "evals", "docpool"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
