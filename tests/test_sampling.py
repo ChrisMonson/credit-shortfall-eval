@@ -55,6 +55,14 @@ def test_the_first_quarter_rounds_up():
     assert is_clustered(folder) is False
 
 
+def test_the_tolerance_is_a_fraction_of_the_average_not_credits():
+    # One 8-credit file in a folder of 5s. The first quarter averages 5.5
+    # against a folder average of 5.125: 0.375 credits apart, which is more
+    # than 0.2 credits but well within 20% of the average.
+    folder = folder_of(8000, *[5000] * 23)
+    assert is_clustered(folder) is False
+
+
 # Sampling folders
 
 
@@ -64,6 +72,14 @@ def test_same_seed_same_folders(pool):
 
 def test_different_seed_different_folders(pool):
     assert sample_folders(pool, 10, seed=1) != sample_folders(pool, 10, seed=2)
+
+
+def test_sampling_leaves_the_global_random_state_alone(pool):
+    # Seeding the module-level generator would reset randomness for every
+    # other caller in the process.
+    state = random.getstate()
+    sample_folders(pool, 5, seed=1)
+    assert random.getstate() == state
 
 
 def test_folder_count(pool):
