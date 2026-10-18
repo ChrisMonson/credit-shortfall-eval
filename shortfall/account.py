@@ -222,7 +222,7 @@ class Account:
         """Raises ValueError, changing nothing, if `credits` is more than the balance."""
         if self.data["creditBalance"] - credits < 0 or credits < 1:
             raise ValueError
-        
+
         self.data["creditBalance"] -= credits
 
     def record_submission(self) -> None:
