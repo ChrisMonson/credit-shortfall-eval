@@ -26,3 +26,4 @@ packages = ["shortfall", "evals", "docpool"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning:inspect_ai.*"]

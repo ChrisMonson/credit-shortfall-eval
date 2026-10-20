@@ -32,7 +32,7 @@ NO_TOOL_REPLY = "no_tool_reply"
 FINAL_OUTPUT = "final_output"
 RUN_ENDED = "run_ended"
 
-RUN_END_CAUSES = ["cancelled", "completed", "turn_limit", "context_limit", "no_tool_limit"]
+RUN_END_CAUSES = ["cancelled", "completed", "turn_limit", "context_limit", "no_tool_limit", "timeout"]
 
 
 @dataclass(frozen=True)
