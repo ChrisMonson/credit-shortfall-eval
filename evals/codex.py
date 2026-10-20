@@ -85,10 +85,21 @@ def codex_cli():
     return CodexCLI
 
 
+# How many runs Codex takes at once, by default, per model. The ChatGPT
+# subscription rate-limits some models much sooner than others: GPT 6 Luna hit
+# 429s at 8 runs at once and still needed retries at 4, while GPT 6.1 Sol ran
+# 8 cleanly. --max-connections on the command line overrides this.
+CONNECTIONS = {"gpt-6-luna": 2}
+DEFAULT_CONNECTIONS = 8
+
+
 class CodexCLI(ModelAPI):
     def __init__(self, model_name: str, base_url=None, api_key=None, config=None, **model_args):
         super().__init__(model_name=model_name, base_url=base_url, api_key=api_key, config=config)
         self.effort = model_args.get("effort")
+
+    def max_connections(self) -> int:
+        return CONNECTIONS.get(self.model_name, DEFAULT_CONNECTIONS)
 
     async def generate(self, input, tools, tool_choice, config) -> ModelOutput:
         raise RuntimeError("codex-cli models run only through the skimmer solver")

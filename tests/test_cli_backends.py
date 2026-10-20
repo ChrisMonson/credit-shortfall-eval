@@ -104,3 +104,8 @@ def test_claude_runs_refuse_without_a_token(fake_clis, monkeypatch):
     task = Task(dataset=samples(["control"], count=1), solver=skimmer(), scorer=shortfall())
     [log] = eval(task, model=get_model("claude-cli/cancel"), log_dir=str(fake_clis / "logs"), display="none")
     assert "CLAUDE_CODE_OAUTH_TOKEN" in str(log.samples[0].error or log.error)
+
+
+def test_codex_runs_luna_two_at_a_time_by_default():
+    assert get_model("codex-cli/gpt-6-luna").api.max_connections() == 2
+    assert get_model("codex-cli/gpt-6.1-sol").api.max_connections() == evals.codex.DEFAULT_CONNECTIONS
