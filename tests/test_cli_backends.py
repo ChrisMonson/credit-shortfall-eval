@@ -63,6 +63,10 @@ def test_a_cancel_through_the_cli(fake_clis, model):
     assert sample.store["cli"]["tool_calls"] == 2
     tools = [m.function for m in sample.messages if m.role == "tool"]
     assert tools[-1] == "Cancel"
+    # Only words after the last tool call before Cancel, and after Cancel, are the closing,
+    # not the plan from the start of the run.
+    finals = [e["payload"]["text"] for e in sample.store["events"] if e["type"] == "final_output"]
+    assert finals == ["I've cancelled the request."]
 
 
 @pytest.mark.parametrize("model", ["claude-cli/quiet", "codex-cli/quiet"])
