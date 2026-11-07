@@ -11,3 +11,8 @@ __pycache__/
 build/
 logs/
 state/
+
+# Plaintext data: it ships as docpool/data.zip (see README). Unpacked copies stay local.
+docpool/documents.json
+docpool/drafts/
+docpool/pools/
