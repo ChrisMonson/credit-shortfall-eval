@@ -39,13 +39,19 @@ def unpacked() -> bool:
 
 
 def unpack(force: bool = False) -> None:
-    """Restores the data from ARCHIVE. Leaves existing plaintext alone unless force."""
-    if unpacked() and not force:
-        return
+    """
+    Restores from ARCHIVE every file that isn't here yet, so a machine that has
+    the main pool still gets the themed pools. Never overwrites a local copy
+    unless force.
+    """
     if not ARCHIVE.exists():
+        if unpacked():
+            return
         raise FileNotFoundError(f"no document data: neither {HERE / 'documents.json'} nor {ARCHIVE} exists")
     with zipfile.ZipFile(ARCHIVE) as archive:
-        archive.extractall(HERE, pwd=PASSWORD.encode())
+        missing = [n for n in archive.namelist() if not n.endswith("/") and (force or not (HERE / n).exists())]
+        if missing:
+            archive.extractall(HERE, members=missing, pwd=PASSWORD.encode())
 
 
 def pack(with_pools: bool = False) -> list[str]:

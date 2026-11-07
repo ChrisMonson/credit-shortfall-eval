@@ -101,6 +101,8 @@ def load_theme(name: str, pool: dict[str, str]) -> dict[str, tuple[str, str]]:
     name repeats, or if it replaces a document the pinned pool doesn't have.
     """
     theme = {}
+    if POOLS_DIR == POOL_FILE.parent / "pools":
+        archive.unpack()
     for entry in json.loads((POOLS_DIR / f"{name}.json").read_text()):
         original, new_name, text = entry["replaces"], entry["name"], entry["text"]
         if original not in pool:
